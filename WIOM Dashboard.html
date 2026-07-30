@@ -1,0 +1,906 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WIOM CX Ops Dashboard — Refund &amp; Coupon 2026</title>
+<style>
+  :root{
+    color-scheme: light;
+    --page:          #f9f9f7;
+    --surface:       #fcfcfb;
+    --surface-2:     #f1f1ee;
+    --border:        rgba(11,11,11,0.10);
+    --border-strong: rgba(11,11,11,0.16);
+    --ink:           #0b0b0b;
+    --ink-2:         #52514e;
+    --muted:         #898781;
+    --grid:          #e1e0d9;
+    --baseline:      #c3c2b7;
+    --accent:        #2a78d6;
+    --accent-ink:    #ffffff;
+    --slot2:         #eb6834;
+    --slot3:         #1baf7a;
+    --slot4:         #eda100;
+    --slot5:         #e87ba4;
+    --good:          #0ca30c;
+    --good-bg:       rgba(12,163,12,0.12);
+    --warning:       #b9790a;
+    --warning-bg:    rgba(250,178,25,0.20);
+    --critical:      #d03b3b;
+    --critical-bg:   rgba(208,59,59,0.12);
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px -12px rgba(11,11,11,0.12);
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-data: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --page:          #0d0d0d;
+      --surface:       #1a1a19;
+      --surface-2:     #212120;
+      --border:        rgba(255,255,255,0.10);
+      --border-strong: rgba(255,255,255,0.18);
+      --ink:           #ffffff;
+      --ink-2:         #c3c2b7;
+      --muted:         #8f8d86;
+      --grid:          #2c2c2a;
+      --baseline:      #383835;
+      --accent:        #3987e5;
+      --accent-ink:    #ffffff;
+      --slot2:         #d95926;
+      --slot3:         #199e70;
+      --slot4:         #c98500;
+      --slot5:         #d55181;
+      --good:          #0ca30c;
+      --good-bg:       rgba(12,163,12,0.20);
+      --warning:       #fab219;
+      --warning-bg:    rgba(250,178,25,0.16);
+      --critical:      #e66767;
+      --critical-bg:   rgba(230,103,103,0.18);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:          #0d0d0d;
+    --surface:       #1a1a19;
+    --surface-2:     #212120;
+    --border:        rgba(255,255,255,0.10);
+    --border-strong: rgba(255,255,255,0.18);
+    --ink:           #ffffff;
+    --ink-2:         #c3c2b7;
+    --muted:         #8f8d86;
+    --grid:          #2c2c2a;
+    --baseline:      #383835;
+    --accent:        #3987e5;
+    --accent-ink:    #ffffff;
+    --slot2:         #d95926;
+    --slot3:         #199e70;
+    --slot4:         #c98500;
+    --slot5:         #d55181;
+    --good:          #0ca30c;
+    --good-bg:       rgba(12,163,12,0.20);
+    --warning:       #fab219;
+    --warning-bg:    rgba(250,178,25,0.16);
+    --critical:      #e66767;
+    --critical-bg:   rgba(230,103,103,0.18);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"]{
+    color-scheme: light;
+    --page: #f9f9f7; --surface:#fcfcfb; --surface-2:#f1f1ee;
+    --border: rgba(11,11,11,0.10); --border-strong: rgba(11,11,11,0.16);
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7;
+    --accent:#2a78d6; --accent-ink:#ffffff; --slot2:#eb6834; --slot3:#1baf7a; --slot4:#eda100; --slot5:#e87ba4;
+    --good:#0ca30c; --good-bg: rgba(12,163,12,0.12); --warning:#b9790a; --warning-bg: rgba(250,178,25,0.20);
+    --critical:#d03b3b; --critical-bg: rgba(208,59,59,0.12);
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px -12px rgba(11,11,11,0.12);
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100%;
+  }
+  html{ width: 100%; overflow-x: hidden; }
+  .wcx-shell{ max-width: 1100px; width: 100%; margin: 0 auto; padding: 0 20px 64px; box-sizing: border-box; }
+
+  /* ---------- header ---------- */
+  header.top{
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--page) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .top-inner{
+    max-width: 1100px; width: 100%; margin: 0 auto; padding: 16px 20px 14px; box-sizing: border-box;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .brand{ display:flex; flex-direction:column; gap:4px; }
+  .brand-mark{ display:flex; align-items:center; gap:8px; }
+  .brand-dot{
+    width:10px; height:10px; border-radius: 3px; background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .brand-eyebrow{
+    font-size: 11px; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+  }
+  h1{
+    margin: 0; font-size: 22px; line-height: 1.25; font-weight: 700;
+    letter-spacing: -0.01em; text-wrap: balance;
+  }
+  .filter-group{
+    display:flex; align-items:center; gap:4px;
+    font-family: var(--font-data); font-variant-numeric: tabular-nums;
+    font-size: 12px; color: var(--ink-2); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px;
+    white-space: nowrap;
+  }
+  .filter-year{ padding-left:2px; padding-right:2px; }
+  .filter-select{
+    appearance:none; -webkit-appearance:none; border:1px solid transparent; background:transparent;
+    color: var(--ink); font: inherit; font-weight:600; cursor:pointer;
+    padding: 2px 4px; border-radius: 4px;
+  }
+  .filter-select:hover{ background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .filter-select:focus-visible{ outline: 2px solid var(--accent); outline-offset: 1px; }
+  .filter-dash{ color: var(--muted); }
+  .filter-reset{
+    appearance:none; border:0; background:transparent; color: var(--accent);
+    font: inherit; font-weight:700; cursor:pointer; padding: 2px 5px; margin-left:2px;
+    border-radius: 4px;
+  }
+  .filter-reset:hover{ background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .filter-reset:focus-visible{ outline: 2px solid var(--accent); outline-offset: 1px; }
+  .tabs{
+    display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .tab-btn{
+    appearance:none; border:0; cursor:pointer; font-family: inherit;
+    font-size: 13px; font-weight: 600; color: var(--ink-2);
+    padding: 7px 14px; border-radius: 7px; background: transparent;
+    transition: background .15s ease, color .15s ease;
+  }
+  .tab-btn:hover{ color: var(--ink); }
+  .tab-btn[aria-selected="true"]{ background: var(--accent); color: var(--accent-ink); }
+  .tab-btn:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- layout primitives ---------- */
+  .panel{ display: none; padding-top: 22px; }
+  .panel.active{ display: block; }
+  section.block{ margin-top: 30px; }
+  section.block:first-of-type{ margin-top: 0; }
+  .block-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .block-title{ font-size: 15px; font-weight: 700; letter-spacing: -0.005em; display:flex; align-items:center; gap:8px; }
+  .scope-tag{
+    font-family: var(--font-data); font-size: 10px; font-weight: 700; letter-spacing: .02em;
+    color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border-radius: 999px; padding: 2px 8px; white-space: nowrap;
+  }
+
+  .grid-kpi{ display:grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 12px; }
+  .grid-2{ display:grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+  @media (max-width: 860px){ .grid-2{ grid-template-columns: 1fr; } }
+
+  .card{
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 16px 18px;
+  }
+
+  /* ---------- KPI tiles ---------- */
+  .kpi{ display:flex; flex-direction:column; gap: 6px; }
+  .kpi-label{ font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing:.03em; text-transform: uppercase; }
+  .kpi-value{ font-family: var(--font-data); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+  .kpi-sub{ font-size: 12px; color: var(--ink-2); display:flex; align-items:center; gap:6px; }
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; font-size: 11px; font-weight:700;
+    padding: 2px 7px; border-radius: 999px; font-family: var(--font-data);
+  }
+  .pill.good{ color: var(--good); background: var(--good-bg); }
+  .pill.critical{ color: var(--critical); background: var(--critical-bg); }
+  .pill.warning{ color: var(--warning); background: var(--warning-bg); }
+  .pill::before{ content:""; width:6px; height:6px; border-radius:50%; background: currentColor; }
+
+  /* ---------- charts ---------- */
+  .chart-wrap{ width: 100%; }
+  svg.chart{ width: 100%; height: auto; display:block; overflow: visible; margin: 0 auto; }
+  svg.chart.chart-wide{ max-width: 900px; max-height: 320px; }
+  svg.chart.chart-narrow{ max-width: 560px; max-height: 240px; }
+  .gridline{ stroke: var(--grid); stroke-width: 1; }
+  .axis-label{ fill: var(--muted); font-size: 9.5px; font-family: var(--font-data); }
+  .cat-label{ fill: var(--ink-2); font-size: 10.5px; font-family: var(--font-ui); }
+  .total-label{ fill: var(--ink); font-size: 10.5px; font-weight: 700; font-family: var(--font-data); text-anchor: middle; }
+  .hover-cap{ fill: transparent; cursor: pointer; }
+  .legend{ display:flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+  .legend-item{ display:flex; align-items:center; gap:6px; font-size: 12px; color: var(--ink-2); }
+  .legend-swatch{ width:10px; height:10px; border-radius: 3px; flex: none; }
+
+  .tooltip{
+    position: fixed; pointer-events: none; z-index: 60;
+    background: var(--ink); color: var(--page);
+    font-size: 11.5px; line-height: 1.5; border-radius: 8px; padding: 8px 10px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.4);
+    opacity: 0; transform: translate(-50%, -100%) translateY(-8px);
+    transition: opacity .1s ease; white-space: nowrap; font-family: var(--font-ui);
+  }
+  .tooltip.show{ opacity: 1; }
+  .tooltip b{ font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+  .tooltip .t-row{ display:flex; gap:10px; justify-content:space-between; }
+  .tooltip .t-title{ font-weight:700; margin-bottom:4px; }
+
+  /* ---------- tables ---------- */
+  .table-scroll{ overflow-x: auto; }
+  table.data{ width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 560px; }
+  table.data th, table.data td{ padding: 7px 10px; text-align: right; white-space: nowrap; }
+  table.data th:first-child, table.data td:first-child{ text-align: left; white-space: normal; min-width: 190px; }
+  table.data thead th{
+    position: sticky; top: 0; background: var(--surface); color: var(--muted);
+    font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  table.data tbody td{ font-family: var(--font-data); font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--border); color: var(--ink-2); }
+  table.data tbody td:first-child{ font-family: var(--font-ui); color: var(--ink); }
+  table.data tbody tr:last-child td{ border-bottom: none; }
+  table.data tbody tr.total-row td{ font-weight: 700; color: var(--ink); border-top: 1px solid var(--border-strong); border-bottom:none; }
+  td.total-cell{ position: relative; font-weight: 600; color: var(--ink) !important; }
+  td.total-cell .bar-track{
+    position: absolute; inset: 4px 8px; border-radius: 4px; background: var(--surface-2); z-index: 0;
+  }
+  td.total-cell .bar-fill{ position:absolute; inset: 4px auto 4px 8px; border-radius: 4px; z-index: 0; }
+  td.total-cell span{ position: relative; z-index: 1; }
+
+  footer.note{
+    margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--border);
+    font-size: 11.5px; color: var(--muted); line-height: 1.6;
+  }
+  footer.note strong{ color: var(--ink-2); }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition: none !important; } }
+</style>
+
+<div class="wcx-shell">
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="brand-mark">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-eyebrow">WIOM · CX Operations</span>
+        </div>
+        <h1>Refund &amp; Coupon Dashboard</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div class="filter-group" role="group" aria-label="Month range filter">
+          <span class="filter-year">2026</span>
+          <select id="filter-from" class="filter-select" aria-label="From month"></select>
+          <span class="filter-dash">–</span>
+          <select id="filter-to" class="filter-select" aria-label="To month"></select>
+          <button id="filter-reset" class="filter-reset" type="button" title="Reset to full range">Reset</button>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Dashboard section">
+          <button class="tab-btn" id="tab-btn-refund" role="tab" aria-selected="true" aria-controls="panel-refund">Refund</button>
+          <button class="tab-btn" id="tab-btn-coupon" role="tab" aria-selected="false" aria-controls="panel-coupon">Coupon</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================= REFUND PANEL ======================= -->
+  <div class="panel active" id="panel-refund">
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Overview</div>
+      </div>
+      <div class="grid-kpi" id="refund-kpis"></div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Refund Status Summary</div>
+      </div>
+      <div class="card">
+        <div class="chart-wrap"><svg class="chart chart-wide" id="chart-refund-status" viewBox="0 0 900 300"></svg></div>
+        <div class="legend" id="legend-refund-status"></div>
+      </div>
+      <div class="table-scroll" style="margin-top:12px;">
+        <table class="data" id="table-refund-status"></table>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Amount of Refund <span class="scope-tag">Refund Done only</span></div>
+      </div>
+      <div class="card">
+        <div class="chart-wrap"><svg class="chart chart-wide" id="chart-refund-amount" viewBox="0 0 900 260"></svg></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Team-wise Summary <span class="scope-tag">Refund Done only</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="chart-wrap"><svg class="chart chart-narrow" id="chart-team-requests" viewBox="0 0 560 190"></svg></div>
+        </div>
+        <div class="card">
+          <div class="chart-wrap"><svg class="chart chart-narrow" id="chart-team-amount" viewBox="0 0 560 190"></svg></div>
+        </div>
+      </div>
+      <div class="table-scroll" style="margin-top:12px;">
+        <table class="data" id="table-team-summary"></table>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Refund Rejection Reasons</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data" id="table-rejection-reasons"></table>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Refund Reasons — Approved Cases</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data" id="table-approved-reasons"></table>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Partner Status for Processed Refunds <span class="scope-tag">Refund Done only</span></div>
+      </div>
+      <div class="table-scroll">
+        <table class="data" id="table-partner-status"></table>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Team-wise Monthly Breakdown <span class="scope-tag">Refund Done only</span></div>
+      </div>
+      <div class="table-scroll">
+        <table class="data" id="table-team-monthly-total" style="margin-bottom:16px;"></table>
+      </div>
+      <div class="table-scroll">
+        <table class="data" id="table-team-monthly-amount"></table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ======================= COUPON PANEL ======================= -->
+  <div class="panel" id="panel-coupon">
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Overview</div>
+      </div>
+      <div class="grid-kpi" id="coupon-kpis"></div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Coupon Request Summary</div>
+      </div>
+      <div class="card">
+        <div class="chart-wrap"><svg class="chart chart-wide" id="chart-coupon-status" viewBox="0 0 900 300"></svg></div>
+        <div class="legend" id="legend-coupon-status"></div>
+      </div>
+      <div class="table-scroll" style="margin-top:12px;">
+        <table class="data" id="table-coupon-status"></table>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Coupon Value</div>
+      </div>
+      <div class="card">
+        <div class="chart-wrap"><svg class="chart chart-wide" id="chart-coupon-value" viewBox="0 0 900 260"></svg></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Team-wise (LOB) Breakdown</div>
+      </div>
+      <div class="card">
+        <div class="chart-wrap"><svg class="chart chart-narrow" id="chart-lob" viewBox="0 0 560 230"></svg></div>
+      </div>
+      <div class="table-scroll" style="margin-top:12px;">
+        <table class="data" id="table-lob"></table>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="note">
+    <strong>Source:</strong> <em>_Refund Request Form (Responses).xlsx</em> → Form Responses 2, <em>Coupon Sheet.xlsx</em> → Sheet1 (CC Team), and <em>Coupon SM.xlsx</em> → Sheet1 (Social Media Team, folded into Overview and the Team-wise breakdown). Filtered to timestamps in 2026 (Jan–Jul, the range present in the data). Category labels are normalized for spacing/casing; blank values are grouped as "Not Mentioned". Refund amount uses the "Refund Amount (Plan amount / duration × remaining days)" column on rows marked "Refund Done". Social Media entries have no reliable action/used status, so they count toward Total Requests and Coupon Value but not Action Done.
+  </footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const DATA = {"refund":{"statusSummary":{"months":["Jan","Feb","Mar","Apr","May","Jun","Jul"],"total":[320,275,502,626,722,727,570],"done":[291,236,454,585,678,653,493],"rejected":[29,39,48,41,44,74,77],"amount":[111828.34,86060.0,182940.5,226135.0,273336.0,275048.0,206610.0]},"rejectionReasons":[{"label":"Device is active - Can't Refund","values":[15,4,4,8,4,8,6],"total":49},{"label":"Document/ Detail Pending","values":[3,4,8,8,6,2,13],"total":44},{"label":"Duplicate lead - Can't refund","values":[2,6,5,4,9,20,12],"total":58},{"label":"Pickup ticket not available","values":[0,2,2,0,4,4,0],"total":12},{"label":"Wrong data entry","values":[6,4,12,10,0,7,5],"total":44},{"label":"Refund Rejected","values":[3,18,16,11,19,30,33],"total":130},{"label":"Service ticket pending","values":[0,0,0,0,2,3,4],"total":9},{"label":"Confirmation Pending form Product","values":[0,0,1,0,0,0,1],"total":2},{"label":"Cash Recharge - Can't refund","values":[0,1,0,0,0,0,0],"total":1},{"label":"Not Mentioned","values":[0,0,0,0,0,0,3],"total":3}],"approvedReasons":[{"label":"Service issue - Customer not happy with service","values":[206,64,116,190,310,413,296],"total":1595},{"label":"Partner not providing the services/no migration possibility","values":[0,92,264,326,259,129,112],"total":1182},{"label":"RDNI","values":[13,3,4,14,55,62,51],"total":202},{"label":"Public Wifi","values":[20,24,11,17,16,21,21],"total":130},{"label":"Autopay amount deducted after removal of device","values":[9,22,20,9,9,12,1],"total":82},{"label":"Shifting - Area not feasiable","values":[18,10,17,12,10,5,5],"total":77},{"label":"Payment done for wrong ID/phone number","values":[0,0,1,3,13,6,5],"total":28},{"label":"Paid by mistake","values":[22,0,0,0,0,0,0],"total":22},{"label":"Extra Cash: Recharge","values":[0,4,5,1,1,0,0],"total":11},{"label":"Extra Cash: Shifting","values":[0,2,4,1,0,0,0],"total":7},{"label":"Paid but not updated on system","values":[0,1,0,1,0,1,0],"total":3},{"label":"Payment deducted twice","values":[0,0,1,2,0,0,0],"total":3},{"label":"Extra Cash: Accessories","values":[0,0,1,0,1,0,0],"total":2},{"label":"Extra Cash: During Installation","values":[0,1,0,0,0,0,0],"total":1},{"label":"Not Mentioned","values":[3,13,10,9,4,4,2],"total":45}],"partnerStatus":[{"label":"Active","values":[145,152,322,444,543,470,397],"total":2473},{"label":"Delisted (No Installation, No service)","values":[65,44,84,92,63,32,29],"total":409},{"label":"Blocked (No installation but provide service)","values":[78,27,38,40,56,0,0],"total":239},{"label":"Terminated (Not a WIOM partner)","values":[0,0,0,0,6,56,18],"total":80},{"label":"Temp Suspended (No installation but provide service)","values":[0,0,0,0,1,40,32],"total":73},{"label":"Blacklisted","values":[0,0,0,0,5,51,15],"total":71},{"label":"Not Mentioned","values":[3,13,10,9,4,4,2],"total":45}],"teamMonthlyTotal":[{"team":"CC Team","values":[158,96,130,191,344,481,387]},{"team":"Social Media Team","values":[13,39,39,53,44,38,30]},{"team":"PFT Team","values":[149,140,333,382,334,208,153]}],"teamMonthlyDone":[{"team":"CC Team","values":[148,84,121,182,323,429,326]},{"team":"Social Media Team","values":[13,38,38,49,41,34,29]},{"team":"PFT Team","values":[130,114,295,354,314,190,138]}],"teamMonthlyAmount":[{"team":"CC Team","values":[62648.0,37659.0,55449.5,78242.0,144735.0,196878.0,156523.0]},{"team":"Social Media Team","values":[3584.0,5579.0,10266.0,12645.0,10312.0,7787.0,5365.0]},{"team":"PFT Team","values":[45596.34,42822.0,117225.0,135248.0,118289.0,70383.0,44722.0]}]},"coupon":{"summary":{"months":["Jan","Feb","Mar","Apr","May","Jun","Jul"],"total":[449,21,43,24,178,224,188],"done":[333,9,1,0,128,170,164],"value":[24604.0,1243.0,2722.0,1792.0,10733.0,14358.0,12556.0]},"lobBreakdown":[{"label":"Service","values":[230,10,1,1,132,189,168],"total":731,"valueValues":[13560.0,332.0,31.0,50.0,7967.0,12493.0,11456.0],"valueTotal":45889.0},{"label":"Retention","values":[180,0,0,0,0,0,0],"total":180,"valueValues":[8287.0,0.0,0.0,0.0,0.0,0.0,0.0],"valueTotal":8287.0},{"label":"Not Mentioned","values":[4,0,0,0,0,0,0],"total":4,"valueValues":[123.0,0.0,0.0,0.0,0.0,0.0,0.0],"valueTotal":123.0},{"label":"Social Media Team","values":[35,11,42,23,46,35,20],"total":212,"valueValues":[2634.0,911.0,2691.0,1742.0,2766.0,1865.0,1100.0],"valueTotal":13709.0}]}};
+
+/* ---------------- helpers ---------------- */
+function fmtINR(n){
+  n = Math.round(n);
+  const neg = n < 0; n = Math.abs(n);
+  let s = String(n);
+  let last3 = s.slice(-3);
+  let rest = s.slice(0, -3);
+  if(rest !== '') last3 = ',' + last3;
+  rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return (neg ? '-' : '') + '₹' + rest + last3;
+}
+function fmtINRShort(n){
+  const a = Math.abs(n);
+  if(a >= 10000000) return '₹' + (n/10000000).toFixed(1) + 'Cr';
+  if(a >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
+  if(a >= 1000) return '₹' + (n/1000).toFixed(0) + 'k';
+  return '₹' + Math.round(n);
+}
+function fmtNum(n){ return Math.round(n).toLocaleString('en-IN'); }
+function pct(a,b){ return b ? Math.round((a/b)*1000)/10 : 0; }
+
+/* ---------------- month filter ---------------- */
+const ALL_MONTHS = DATA.refund.statusSummary.months;
+let filterFrom = 0, filterTo = ALL_MONTHS.length - 1;
+function sliceArr(arr){ return arr.slice(filterFrom, filterTo + 1); }
+function sumSlice(arr){ return sliceArr(arr).reduce((a,b)=>a+b,0); }
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+function svgns(tag, attrs){
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for(const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function roundTopPath(x,y,w,h,r){
+  r = Math.min(r, w/2, Math.max(h,0));
+  if(h <= 0) return `M${x},${y+h} h${w} v0 h${-w} Z`;
+  if(h < r) r = h;
+  return `M${x},${y+h} L${x},${y+r} Q${x},${y} ${x+r},${y} L${x+w-r},${y} Q${x+w},${y} ${x+w},${y+r} L${x+w},${y+h} Z`;
+}
+
+const tooltipEl = document.getElementById('tooltip');
+function showTooltip(evt, html){
+  tooltipEl.innerHTML = html;
+  tooltipEl.classList.add('show');
+  moveTooltip(evt);
+}
+function moveTooltip(evt){
+  tooltipEl.style.left = evt.clientX + 'px';
+  tooltipEl.style.top = evt.clientY + 'px';
+}
+function hideTooltip(){ tooltipEl.classList.remove('show'); }
+
+/* ---------------- KPI tiles ---------------- */
+function kpiTile(label, value, subHtml){
+  const wrap = document.createElement('div');
+  wrap.className = 'card kpi';
+  wrap.innerHTML = `<div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><div class="kpi-sub">${subHtml||''}</div>`;
+  return wrap;
+}
+
+function periodLabel(){
+  return filterFrom === filterTo ? `${ALL_MONTHS[filterFrom]} 2026` : `${ALL_MONTHS[filterFrom]}–${ALL_MONTHS[filterTo]} 2026`;
+}
+function buildRefundKPIs(){
+  const s = DATA.refund.statusSummary;
+  const total = sumSlice(s.total);
+  const done = sumSlice(s.done);
+  const rej = sumSlice(s.rejected);
+  const amt = sumSlice(s.amount);
+  const host = document.getElementById('refund-kpis');
+  host.innerHTML = '';
+  host.appendChild(kpiTile('Total Requests', fmtNum(total), periodLabel()));
+  host.appendChild(kpiTile('Refund Done', fmtNum(done), `<span class="pill good">${pct(done,total)}% of total</span>`));
+  host.appendChild(kpiTile('Refund Rejected', fmtNum(rej), `<span class="pill critical">${pct(rej,total)}% of total</span>`));
+  host.appendChild(kpiTile('Amount Refunded', fmtINRShort(amt), `${fmtINR(amt)} · Refund Done only`));
+}
+function buildCouponKPIs(){
+  const s = DATA.coupon.summary;
+  const total = sumSlice(s.total);
+  const done = sumSlice(s.done);
+  const val = sumSlice(s.value);
+  const host = document.getElementById('coupon-kpis');
+  host.innerHTML = '';
+  host.appendChild(kpiTile('Total Requests', fmtNum(total), periodLabel()));
+  host.appendChild(kpiTile('Action Done', fmtNum(done), `<span class="pill good">${pct(done,total)}% actioned</span>`));
+  host.appendChild(kpiTile('Not Actioned', fmtNum(total-done), `<span class="pill warning">${pct(total-done,total)}% pending / blank</span>`));
+  host.appendChild(kpiTile('Coupon Value Issued', fmtINRShort(val), `${fmtINR(val)} total`));
+}
+
+/* ---------------- stacked bar chart (status) ---------------- */
+function buildStackedBar(svgId, months, seriesA, seriesB, colorA, colorB, labelA, labelB, legendId){
+  months = sliceArr(months); seriesA = sliceArr(seriesA); seriesB = sliceArr(seriesB);
+  const svg = document.getElementById(svgId);
+  svg.innerHTML = '';
+  const vb = svg.viewBox.baseVal;
+  const W = vb.width, H = vb.height;
+  const marginL = 46, marginR = 14, marginT = 34, marginB = 34;
+  const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+  const totals = months.map((_,i)=> seriesA[i] + seriesB[i]);
+  const max = Math.max(...totals) * 1.18 || 1;
+  const n = months.length;
+  const gap = plotW / n * 0.32;
+  const barW = plotW/n - gap;
+
+  const gridN = 4;
+  for(let i=0;i<=gridN;i++){
+    const y = marginT + plotH - (plotH * i/gridN);
+    svg.appendChild(svgns('line', {x1:marginL,y1:y,x2:W-marginR,y2:y,class:'gridline'}));
+    const val = Math.round(max * i/gridN);
+    const t = svgns('text', {x:marginL-8,y:y+3,class:'axis-label','text-anchor':'end'});
+    t.textContent = fmtNum(val);
+    svg.appendChild(t);
+  }
+
+  months.forEach((m,i)=>{
+    const x = marginL + i*(plotW/n) + gap/2;
+    const a = seriesA[i], b = seriesB[i], tot = a+b;
+    const hA = plotH * a/max, hB = plotH * b/max;
+    const yBase = marginT + plotH;
+    const yA = yBase - hA;
+    const yB = yA - hB;
+    const rTop = 4;
+    if(b > 0){
+      const p = svgns('path', {d: roundTopPath(x, yB, barW, hB, rTop), fill: colorB});
+      svg.appendChild(p);
+      if(hA > 0){
+        svg.appendChild(svgns('rect', {x:x, y:yA, width:barW, height:hA, fill:colorA}));
+      } else {
+        const pA = svgns('path', {d: roundTopPath(x, yA, barW, hA, rTop), fill: colorA});
+        svg.appendChild(pA);
+      }
+    } else if(a > 0){
+      const p = svgns('path', {d: roundTopPath(x, yA, barW, hA, rTop), fill: colorA});
+      svg.appendChild(p);
+    }
+    const tl = svgns('text', {x: x+barW/2, y: yB - 8, class:'total-label'});
+    tl.textContent = fmtNum(tot);
+    svg.appendChild(tl);
+    const cl = svgns('text', {x: x+barW/2, y: H-10, class:'cat-label', 'text-anchor':'middle'});
+    cl.textContent = m;
+    svg.appendChild(cl);
+
+    const cap = svgns('rect', {x:x-gap/2, y:marginT, width: barW+gap, height: plotH+18, class:'hover-cap'});
+    cap.addEventListener('mouseenter', (e)=>{
+      showTooltip(e, `<div class="t-title">${m} 2026</div>
+        <div class="t-row"><span>${labelA}</span><b>${fmtNum(a)}</b></div>
+        <div class="t-row"><span>${labelB}</span><b>${fmtNum(b)}</b></div>
+        <div class="t-row"><span>Total</span><b>${fmtNum(tot)}</b></div>`);
+    });
+    cap.addEventListener('mousemove', moveTooltip);
+    cap.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(cap);
+  });
+
+  svg.appendChild(svgns('line', {x1:marginL,y1:marginT+plotH,x2:W-marginR,y2:marginT+plotH,stroke:'var(--baseline)','stroke-width':1}));
+
+  if(legendId){
+    const leg = document.getElementById(legendId);
+    leg.innerHTML = `<span class="legend-item"><span class="legend-swatch" style="background:${colorA}"></span>${labelA}</span>
+                      <span class="legend-item"><span class="legend-swatch" style="background:${colorB}"></span>${labelB}</span>`;
+  }
+}
+
+/* ---------------- line + area chart ---------------- */
+function buildLineArea(svgId, months, values, color, formatter, axisFormatter){
+  formatter = formatter || fmtNum;
+  axisFormatter = axisFormatter || fmtNum;
+  months = sliceArr(months); values = sliceArr(values);
+  const svg = document.getElementById(svgId);
+  svg.innerHTML = '';
+  const vb = svg.viewBox.baseVal;
+  const W = vb.width, H = vb.height;
+  const marginL = 54, marginR = 20, marginT = 26, marginB = 34;
+  const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+  const max = Math.max(...values) * 1.2 || 1;
+  const n = values.length;
+  const stepX = n > 1 ? plotW/(n-1) : 0;
+
+  const gridN = 4;
+  for(let i=0;i<=gridN;i++){
+    const y = marginT + plotH - (plotH*i/gridN);
+    svg.appendChild(svgns('line', {x1:marginL,y1:y,x2:W-marginR,y2:y,class:'gridline'}));
+    const t = svgns('text', {x:marginL-10,y:y+3,class:'axis-label','text-anchor':'end'});
+    t.textContent = axisFormatter(max*i/gridN);
+    svg.appendChild(t);
+  }
+
+  const pts = values.map((v,i)=>({
+    x: marginL + i*stepX,
+    y: marginT + plotH - (plotH * v/max)
+  }));
+
+  const gradId = svgId + '-grad';
+  const defs = svgns('defs', {});
+  const grad = svgns('linearGradient', {id:gradId, x1:'0', y1:'0', x2:'0', y2:'1'});
+  grad.appendChild(svgns('stop', {offset:'0%', 'stop-color':color, 'stop-opacity':'0.28'}));
+  grad.appendChild(svgns('stop', {offset:'100%', 'stop-color':color, 'stop-opacity':'0'}));
+  defs.appendChild(grad);
+  svg.appendChild(defs);
+
+  let areaD = `M${pts[0].x},${marginT+plotH} `;
+  pts.forEach(p=> areaD += `L${p.x},${p.y} `);
+  areaD += `L${pts[pts.length-1].x},${marginT+plotH} Z`;
+  svg.appendChild(svgns('path', {d:areaD, fill:`url(#${gradId})`}));
+
+  let lineD = `M${pts[0].x},${pts[0].y} `;
+  pts.forEach((p,i)=>{ if(i>0) lineD += `L${p.x},${p.y} `; });
+  svg.appendChild(svgns('path', {d:lineD, fill:'none', stroke:color, 'stroke-width':2, 'stroke-linejoin':'round', 'stroke-linecap':'round'}));
+
+  svg.appendChild(svgns('line', {x1:marginL,y1:marginT+plotH,x2:W-marginR,y2:marginT+plotH,stroke:'var(--baseline)','stroke-width':1}));
+
+  const crosshair = svgns('line', {x1:0,y1:marginT,x2:0,y2:marginT+plotH,stroke:'var(--baseline)','stroke-width':1,'stroke-dasharray':'3,3',opacity:'0'});
+  svg.appendChild(crosshair);
+
+  pts.forEach((p,i)=>{
+    const isLast = i === pts.length-1;
+    const r = isLast ? 5 : 3.5;
+    const dot = svgns('circle', {cx:p.x, cy:p.y, r:r, fill: 'var(--surface)', stroke:color, 'stroke-width':2});
+    svg.appendChild(dot);
+    if(isLast){
+      const t = svgns('text', {x:p.x, y:p.y-12, class:'total-label'});
+      t.textContent = axisFormatter(values[i]);
+      svg.appendChild(t);
+    }
+    const cl = svgns('text', {x:p.x, y:H-10, class:'cat-label', 'text-anchor':'middle'});
+    cl.textContent = months[i];
+    svg.appendChild(cl);
+
+    const cap = svgns('rect', {x: p.x - stepX/2, y:marginT, width: stepX||plotW, height: plotH+18, class:'hover-cap'});
+    cap.addEventListener('mouseenter', (e)=>{
+      crosshair.setAttribute('x1',p.x); crosshair.setAttribute('x2',p.x); crosshair.setAttribute('opacity','1');
+      showTooltip(e, `<div class="t-title">${months[i]} 2026</div><div class="t-row"><span>${formatter?formatter(values[i]):values[i]}</span></div>`);
+    });
+    cap.addEventListener('mousemove', moveTooltip);
+    cap.addEventListener('mouseleave', ()=>{ crosshair.setAttribute('opacity','0'); hideTooltip(); });
+    svg.appendChild(cap);
+  });
+}
+
+/* ---------------- horizontal bar compare ---------------- */
+function buildHBars(svgId, items, formatter){
+  const svg = document.getElementById(svgId);
+  svg.innerHTML = '';
+  const vb = svg.viewBox.baseVal;
+  const W = vb.width, H = vb.height;
+  const marginL = 132, marginR = 70, marginT = 10, marginB = 10;
+  const plotW = W - marginL - marginR;
+  const n = items.length;
+  const rowH = (H - marginT - marginB) / n;
+  const barH = Math.min(22, rowH*0.5);
+  const max = Math.max(...items.map(d=>d.value)) * 1.08 || 1;
+
+  items.forEach((d,i)=>{
+    const y = marginT + rowH*i + rowH/2 - barH/2;
+    const w = plotW * d.value/max;
+    const lbl = svgns('text', {x: marginL-10, y: y+barH/2+4, class:'cat-label', 'text-anchor':'end'});
+    lbl.textContent = d.label;
+    svg.appendChild(lbl);
+    svg.appendChild(svgns('rect', {x:marginL, y:y, width:plotW, height:barH, rx:4, fill:'var(--surface-2)'}));
+    const bar = svgns('path', {d: `M${marginL},${y+barH} L${marginL},${y+4} Q${marginL},${y} ${marginL+4},${y} L${marginL+Math.max(w,4)-4},${y} Q${marginL+Math.max(w,4)},${y} ${marginL+Math.max(w,4)},${y+4} L${marginL+Math.max(w,4)},${y+barH} Z`, fill: d.color});
+    svg.appendChild(bar);
+    const vt = svgns('text', {x: marginL+w+8, y: y+barH/2+4, class:'total-label', 'text-anchor':'start'});
+    vt.textContent = formatter ? formatter(d.value) : fmtNum(d.value);
+    svg.appendChild(vt);
+  });
+}
+
+/* ---------------- tables ---------------- */
+function sparkCell(value, max, color){
+  const pctW = max ? Math.max(4, Math.round((value/max)*100)) : 0;
+  return `<td class="total-cell"><span class="bar-track" style="background:color-mix(in srgb, ${color} 14%, transparent)"></span><span class="bar-fill" style="width:${pctW}%; background:color-mix(in srgb, ${color} 22%, transparent)"></span><span>${fmtNum(value)}</span></td>`;
+}
+function buildMonthTable(elId, months, rows, opts){
+  opts = opts || {};
+  const el = document.getElementById(elId);
+  months = sliceArr(months);
+  rows = rows.map(r=>{
+    const values = sliceArr(r.values);
+    return {label:r.label, values, total: values.reduce((a,b)=>a+b,0)};
+  });
+  const maxTotal = Math.max(...rows.map(r=>r.total), 1);
+  let thead = `<thead><tr><th>${opts.firstCol||'Category'}</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead>`;
+  let tbody = '<tbody>';
+  rows.forEach(r=>{
+    tbody += `<tr><td>${r.label}</td>${r.values.map(v=>`<td>${fmtNum(v)}</td>`).join('')}${sparkCell(r.total, maxTotal, opts.color||'var(--accent)')}</tr>`;
+  });
+  if(opts.totalRow){
+    const totalVals = months.map((_,i)=> rows.reduce((s,r)=> s + r.values[i], 0));
+    const grand = rows.reduce((s,r)=> s + r.total, 0);
+    tbody += `<tr class="total-row"><td>Total</td>${totalVals.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(grand)}</td></tr>`;
+  }
+  tbody += '</tbody>';
+  el.innerHTML = thead + tbody;
+}
+
+function buildRefundStatusTable(){
+  const s = DATA.refund.statusSummary;
+  const el = document.getElementById('table-refund-status');
+  const months = sliceArr(s.months);
+  const rows = [
+    {label:'Total Refund Request', values:sliceArr(s.total)},
+    {label:'Refund Done', values:sliceArr(s.done)},
+    {label:'Refund Rejected', values:sliceArr(s.rejected)},
+    {label:'Amount of Refund (₹) — Refund Done only', values:sliceArr(s.amount), money:true},
+  ];
+  let thead = `<thead><tr><th>Status</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead>`;
+  let tbody = '<tbody>';
+  rows.forEach(r=>{
+    const tot = r.values.reduce((a,b)=>a+b,0);
+    const fmt = r.money ? fmtINR : fmtNum;
+    const bold = r.money;
+    tbody += `<tr${bold?' class="total-row"':''}><td>${r.label}</td>${r.values.map(v=>`<td>${fmt(v)}</td>`).join('')}<td>${fmt(tot)}</td></tr>`;
+  });
+  tbody += '</tbody>';
+  el.innerHTML = thead+tbody;
+}
+function buildCouponStatusTable(){
+  const s = DATA.coupon.summary;
+  const el = document.getElementById('table-coupon-status');
+  const months = sliceArr(s.months);
+  const rows = [
+    {label:'Total Requests Logged', values:sliceArr(s.total)},
+    {label:'Action Done', values:sliceArr(s.done)},
+    {label:'Total Coupon Value (₹)', values:sliceArr(s.value), money:true},
+  ];
+  let thead = `<thead><tr><th>Metric</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead>`;
+  let tbody = '<tbody>';
+  rows.forEach(r=>{
+    const tot = r.values.reduce((a,b)=>a+b,0);
+    const fmt = r.money ? fmtINR : fmtNum;
+    tbody += `<tr${r.money?' class="total-row"':''}><td>${r.label}</td>${r.values.map(v=>`<td>${fmt(v)}</td>`).join('')}<td>${fmt(tot)}</td></tr>`;
+  });
+  tbody += '</tbody>';
+  el.innerHTML = thead+tbody;
+}
+function buildTeamSummaryTable(){
+  const el = document.getElementById('table-team-summary');
+  const doneRows = DATA.refund.teamMonthlyDone;
+  const amtRows = DATA.refund.teamMonthlyAmount;
+  let thead = `<thead><tr><th>Team</th><th>Refund Done</th><th>Amount of Refund</th></tr></thead>`;
+  let tbody = '<tbody>';
+  let sD=0,sA=0;
+  doneRows.forEach((t,i)=>{
+    const done = sumSlice(t.values);
+    const amt = sumSlice(amtRows[i].values);
+    sD+=done; sA+=amt;
+    tbody += `<tr><td>${t.team}</td><td>${fmtNum(done)}</td><td>${fmtINR(amt)}</td></tr>`;
+  });
+  tbody += `<tr class="total-row"><td>Total</td><td>${fmtNum(sD)}</td><td>${fmtINR(sA)}</td></tr>`;
+  tbody += '</tbody>';
+  el.innerHTML = thead+tbody;
+}
+function buildTeamMonthlyTables(){
+  const months = DATA.refund.statusSummary.months;
+  buildMonthTable('table-team-monthly-total', months, DATA.refund.teamMonthlyDone.map(t=>({label:t.team, values:t.values})), {firstCol:'Team', totalRow:true, color:'var(--accent)'});
+  const monthsSliced = sliceArr(months);
+  const amtRows = DATA.refund.teamMonthlyAmount.map(t=>({label:t.team, values:sliceArr(t.values), total: sumSlice(t.values)}));
+  const el = document.getElementById('table-team-monthly-amount');
+  const maxTotal = Math.max(...amtRows.map(r=>r.total),1);
+  let thead = `<thead><tr><th>Team</th>${monthsSliced.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead>`;
+  let tbody = '<tbody>';
+  amtRows.forEach(r=>{
+    tbody += `<tr><td>${r.label}</td>${r.values.map(v=>`<td>${fmtINR(v)}</td>`).join('')}${sparkCell(r.total,maxTotal,'var(--accent)').replace(fmtNum(r.total), fmtINR(r.total))}</tr>`;
+  });
+  const totalVals = monthsSliced.map((_,i)=> amtRows.reduce((s,r)=> s + r.values[i], 0));
+  const grand = amtRows.reduce((s,r)=> s + r.total, 0);
+  tbody += `<tr class="total-row"><td>Total</td>${totalVals.map(v=>`<td>${fmtINR(v)}</td>`).join('')}<td>${fmtINR(grand)}</td></tr>`;
+  tbody += '</tbody>';
+  el.innerHTML = thead+tbody;
+  // fix sparkline label to money format (sparkCell renders fmtNum by default)
+  const rowsEls = el.querySelectorAll('tbody tr:not(.total-row) td.total-cell span:last-child');
+  amtRows.forEach((r,i)=>{ if(rowsEls[i]) rowsEls[i].textContent = fmtINR(r.total); });
+}
+function buildLobTable(){
+  const months = sliceArr(DATA.coupon.summary.months);
+  const el = document.getElementById('table-lob');
+  const rows = DATA.coupon.lobBreakdown.map(r=>({
+    label: r.label,
+    values: sliceArr(r.values),
+    valueValues: sliceArr(r.valueValues),
+  })).map(r=>({...r, total: r.values.reduce((a,b)=>a+b,0), valueTotal: r.valueValues.reduce((a,b)=>a+b,0)}));
+  const maxTotal = Math.max(...rows.map(r=>r.total),1);
+  let thead = `<thead><tr><th>LOB / Team</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Requests</th><th>Coupon Value</th></tr></thead>`;
+  let tbody = '<tbody>';
+  let sums = months.map(()=>0); let sT=0, sV=0;
+  rows.forEach(r=>{
+    r.values.forEach((v,i)=> sums[i]+=v);
+    sT += r.total; sV += r.valueTotal;
+    tbody += `<tr><td>${r.label}</td>${r.values.map(v=>`<td>${fmtNum(v)}</td>`).join('')}${sparkCell(r.total,maxTotal,'var(--accent)')}<td>${fmtINR(r.valueTotal)}</td></tr>`;
+  });
+  tbody += `<tr class="total-row"><td>Total</td>${sums.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(sT)}</td><td>${fmtINR(sV)}</td></tr>`;
+  tbody += '</tbody>';
+  el.innerHTML = thead+tbody;
+}
+/* ---------------- render ---------------- */
+function render(){
+  const good = css('--good'), critical = css('--critical'), warning = css('--warning'), accent = css('--accent');
+  const slot2 = css('--slot2'), slot3 = css('--slot3'), muted = css('--muted');
+
+  buildRefundKPIs();
+  buildStackedBar('chart-refund-status', DATA.refund.statusSummary.months, DATA.refund.statusSummary.done, DATA.refund.statusSummary.rejected, good, critical, 'Refund Done', 'Refund Rejected', 'legend-refund-status');
+  buildRefundStatusTable();
+  buildLineArea('chart-refund-amount', DATA.refund.statusSummary.months, DATA.refund.statusSummary.amount, accent, fmtINR, fmtINRShort);
+
+  const teamColors = {'CC Team':accent, 'Social Media Team':slot2, 'PFT Team':slot3};
+  buildHBars('chart-team-requests', DATA.refund.teamMonthlyDone.map(t=>({label:t.team, value:sumSlice(t.values), color:teamColors[t.team]})), fmtNum);
+  buildHBars('chart-team-amount', DATA.refund.teamMonthlyAmount.map(t=>({label:t.team, value:sumSlice(t.values), color:teamColors[t.team]})), fmtINRShort);
+  buildTeamSummaryTable();
+
+  buildMonthTable('table-rejection-reasons', DATA.refund.statusSummary.months, DATA.refund.rejectionReasons, {firstCol:'Rejection Reason', totalRow:true, color: critical});
+  buildMonthTable('table-approved-reasons', DATA.refund.statusSummary.months, DATA.refund.approvedReasons, {firstCol:'Refund Reason', totalRow:true, color: good});
+  buildMonthTable('table-partner-status', DATA.refund.statusSummary.months, DATA.refund.partnerStatus, {firstCol:'Partner Status', totalRow:true, color: accent});
+  buildTeamMonthlyTables();
+
+  buildCouponKPIs();
+  buildStackedBar('chart-coupon-status', DATA.coupon.summary.months, DATA.coupon.summary.done, DATA.coupon.summary.total.map((t,i)=> t - DATA.coupon.summary.done[i]), good, warning, 'Action Done', 'Not Done / Blank', 'legend-coupon-status');
+  buildCouponStatusTable();
+  buildLineArea('chart-coupon-value', DATA.coupon.summary.months, DATA.coupon.summary.value, accent, fmtINR, fmtINRShort);
+
+  const lobColors = {'Service':accent, 'Retention':slot2, 'Social Media Team':slot3, 'Not Mentioned':muted};
+  buildHBars('chart-lob', DATA.coupon.lobBreakdown.map(r=>({label:r.label, value:sumSlice(r.values), color:lobColors[r.label]||muted})), fmtNum);
+  buildLobTable();
+}
+
+/* ---------------- tabs ---------------- */
+const tabBtnRefund = document.getElementById('tab-btn-refund');
+const tabBtnCoupon = document.getElementById('tab-btn-coupon');
+const panelRefund = document.getElementById('panel-refund');
+const panelCoupon = document.getElementById('panel-coupon');
+function setTab(which){
+  const isRefund = which === 'refund';
+  tabBtnRefund.setAttribute('aria-selected', isRefund ? 'true' : 'false');
+  tabBtnCoupon.setAttribute('aria-selected', isRefund ? 'false' : 'true');
+  panelRefund.classList.toggle('active', isRefund);
+  panelCoupon.classList.toggle('active', !isRefund);
+}
+tabBtnRefund.addEventListener('click', ()=> setTab('refund'));
+tabBtnCoupon.addEventListener('click', ()=> setTab('coupon'));
+
+/* ---------------- month/date filter ---------------- */
+const fromSel = document.getElementById('filter-from');
+const toSel = document.getElementById('filter-to');
+const resetBtn = document.getElementById('filter-reset');
+ALL_MONTHS.forEach((m,i)=>{
+  fromSel.appendChild(new Option(`${m} 2026`, i));
+  toSel.appendChild(new Option(`${m} 2026`, i));
+});
+fromSel.value = filterFrom;
+toSel.value = filterTo;
+function applyFilterChange(changed){
+  let f = parseInt(fromSel.value, 10);
+  let t = parseInt(toSel.value, 10);
+  if(f > t){
+    if(changed === 'from') t = f; else f = t;
+    fromSel.value = f; toSel.value = t;
+  }
+  filterFrom = f; filterTo = t;
+  render();
+}
+fromSel.addEventListener('change', ()=> applyFilterChange('from'));
+toSel.addEventListener('change', ()=> applyFilterChange('to'));
+resetBtn.addEventListener('click', ()=>{
+  filterFrom = 0; filterTo = ALL_MONTHS.length - 1;
+  fromSel.value = filterFrom; toSel.value = filterTo;
+  render();
+});
+
+render();
+let resizeT;
+window.addEventListener('resize', ()=>{ clearTimeout(resizeT); resizeT = setTimeout(render, 150); });
+</script>
