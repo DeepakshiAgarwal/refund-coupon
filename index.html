@@ -478,6 +478,9 @@
       <div class="table-scroll" style="margin-top:12px;">
         <table class="data" id="table-lob"></table>
       </div>
+      <div class="table-scroll" style="margin-top:16px;">
+        <table class="data" id="table-lob-amount"></table>
+      </div>
     </section>
 
   </div>
@@ -887,6 +890,24 @@ function buildLobTable(){
   tbody += '</tbody>';
   el.innerHTML = thead+tbody;
 }
+function buildLobAmountTable(){
+  const months = sliceArr(DATA.coupon.summary.months);
+  const rows = DATA.coupon.lobBreakdown.map(r=>({label:r.label, values:sliceArr(r.valueValues)})).map(r=>({...r, total:r.values.reduce((a,b)=>a+b,0)}));
+  const el = document.getElementById('table-lob-amount');
+  const maxTotal = Math.max(...rows.map(r=>r.total),1);
+  let thead = `<thead><tr><th>LOB / Team</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead>`;
+  let tbody = '<tbody>';
+  rows.forEach(r=>{
+    tbody += `<tr><td>${r.label}</td>${r.values.map(v=>`<td>${fmtINR(v)}</td>`).join('')}${sparkCell(r.total,maxTotal,'var(--accent)').replace(fmtNum(r.total), fmtINR(r.total))}</tr>`;
+  });
+  const totalVals = months.map((_,i)=> rows.reduce((s,r)=> s + r.values[i], 0));
+  const grand = rows.reduce((s,r)=> s + r.total, 0);
+  tbody += `<tr class="total-row"><td>Total</td>${totalVals.map(v=>`<td>${fmtINR(v)}</td>`).join('')}<td>${fmtINR(grand)}</td></tr>`;
+  tbody += '</tbody>';
+  el.innerHTML = thead+tbody;
+  const rowsEls = el.querySelectorAll('tbody tr:not(.total-row) td.total-cell span:last-child');
+  rows.forEach((r,i)=>{ if(rowsEls[i]) rowsEls[i].textContent = fmtINR(r.total); });
+}
 /* ---------------- render ---------------- */
 function render(){
   const good = css('--good'), critical = css('--critical'), warning = css('--warning'), accent = css('--accent');
@@ -915,6 +936,7 @@ function render(){
   const lobColors = {'Service':accent, 'Retention':slot2, 'Social Media Team':slot3, 'Not Mentioned':muted};
   buildHBars('chart-lob', DATA.coupon.lobBreakdown.map(r=>({label:r.label, value:sumSlice(r.values), color:lobColors[r.label]||muted})), fmtNum);
   buildLobTable();
+  buildLobAmountTable();
 }
 
 /* ---------------- tabs ---------------- */
@@ -1064,38 +1086,71 @@ const PARTNER_CATS = ["Active","Delisted (No Installation, No service)","Blocked
 const TEAMS = ["CC Team","Social Media Team","PFT Team"];
 const LOB_CATS = ["Service","Retention","Not Mentioned"];
 
+function normHeader(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' '); }
+function colIndex(header, name, fallback){
+  const target = normHeader(name);
+  const idx = header.findIndex(h => normHeader(h) === target);
+  return idx >= 0 ? idx : fallback;
+}
+
 function computeDashboard(refundCSV, ccCSV, smCSV){
-  const refundTable = parseCSV(refundCSV); refundTable.shift();
-  const ccTable = parseCSV(ccCSV); ccTable.shift();
-  const smTable = parseCSV(smCSV); smTable.shift();
+  const refundTable = parseCSV(refundCSV);
+  const refundHeader = refundTable.shift() || [];
+  const ccTable = parseCSV(ccCSV);
+  const ccHeader = ccTable.shift() || [];
+  const smTable = parseCSV(smCSV);
+  const smHeader = smTable.shift() || [];
+
+  // Columns are located by header name (with a positional fallback) rather
+  // than hardcoded indices, because this is a live, hand-edited sheet where
+  // columns get reordered/renamed over time — a fixed index silently reads
+  // the wrong field the moment someone reorders a column.
+  const rCol = {
+    timestamp: colIndex(refundHeader, 'Timestamp', 0),
+    email: colIndex(refundHeader, 'Email Address', 1),
+    vreason: colIndex(refundHeader, 'Verified Reason', 7),
+    pstatus: colIndex(refundHeader, 'Partner Status', 10),
+    amount: colIndex(refundHeader, 'Refund Amount (Plan amount/Plan Duration x Remaining days of the plan)', 18),
+    status: colIndex(refundHeader, 'Refund status', 27),
+  };
+  const ccCol = {
+    date: colIndex(ccHeader, 'Date', 0),
+    lob: colIndex(ccHeader, 'LOB', 2),
+    value: colIndex(ccHeader, 'Coupon value', 7),
+    action: colIndex(ccHeader, 'Action Taken', 9),
+  };
+  const smCol = {
+    date: colIndex(smHeader, 'Date', 1),
+    value: colIndex(smHeader, 'Coupon value', 5),
+  };
 
   const refundRows = [];
   for(const row of refundTable){
-    const dt = parseFlexDate(get(row,0));
+    const dt = parseFlexDate(get(row, rCol.timestamp));
     if(!dt || dt.year !== YEAR) continue;
-    const email = (get(row,1) || '').trim();
-    let status = normText(get(row,27)); if(status === '') status = 'Not Mentioned';
-    let amount = parseFloat(get(row,18)); if(!isFinite(amount)) amount = 0;
-    let vreason = normText(get(row,7)); if(vreason === '') vreason = 'Not Mentioned';
-    let pstatus = normText(get(row,10)); if(pstatus === '') pstatus = 'Not Mentioned';
+    const email = (get(row, rCol.email) || '').trim();
+    let status = normText(get(row, rCol.status)); if(status === '') status = 'Not Mentioned';
+    let amount = parseFloat(get(row, rCol.amount)); if(!isFinite(amount)) amount = 0;
+    let vreason = normText(get(row, rCol.vreason)); if(vreason === '') vreason = 'Not Mentioned';
+    let pstatus = normText(get(row, rCol.pstatus)); if(pstatus === '') pstatus = 'Not Mentioned';
     refundRows.push({month:dt.month, email, status, amount, vreason, pstatus});
   }
 
   const ccRows = [];
   for(const row of ccTable){
-    const dt = parseFlexDate(get(row,0));
+    const dt = parseFlexDate(get(row, ccCol.date));
     if(!dt || dt.year !== YEAR) continue;
-    const lob = normLobMerged(get(row,2));
-    let val = parseFloat(get(row,7)); if(!isFinite(val)) val = 0;
-    const done = String(get(row,9) || '').trim().toLowerCase() === 'done';
+    const lob = normLobMerged(get(row, ccCol.lob));
+    let val = parseFloat(get(row, ccCol.value)); if(!isFinite(val)) val = 0;
+    const done = String(get(row, ccCol.action) || '').trim().toLowerCase() === 'done';
     ccRows.push({month:dt.month, lob, val, done});
   }
 
   const smRows = [];
   for(const row of smTable){
-    const dt = parseFlexDate(get(row,1));
+    const dt = parseFlexDate(get(row, smCol.date));
     if(!dt || dt.year !== YEAR) continue;
-    let val = parseFloat(get(row,5)); if(!isFinite(val)) val = 0;
+    let val = parseFloat(get(row, smCol.value)); if(!isFinite(val)) val = 0;
     smRows.push({month:dt.month, val});
   }
 
