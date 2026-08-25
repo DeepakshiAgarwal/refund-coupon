@@ -434,6 +434,22 @@
       </div>
     </section>
 
+    <section class="block">
+      <div class="block-head">
+        <div class="block-title">Wiom Net Refunds</div>
+      </div>
+      <div class="grid-kpi" id="wiom-net-kpis"></div>
+    </section>
+
+    <section class="block">
+      <div class="card">
+        <div class="chart-wrap"><svg class="chart chart-wide" id="chart-wiom-net-amount" viewBox="0 0 900 260"></svg></div>
+      </div>
+      <div class="table-scroll" style="margin-top:12px;">
+        <table class="data" id="table-wiom-net-summary"></table>
+      </div>
+    </section>
+
   </div>
 
   <!-- ======================= COUPON PANEL ======================= -->
@@ -486,7 +502,7 @@
   </div>
 
   <footer class="note">
-    <strong>Source (live):</strong> Refund Request Form responses (tab "Form Responses 2"), the CC Team coupon log, and the Social Media Team coupon log — all read directly from Google Sheets on page load. Filtered to timestamps in 2026. Category labels are normalized for spacing/casing; blank values are grouped as "Not Mentioned"; a category not seen before is grouped as "Other" rather than silently dropped. Refund amount uses the "Refund Amount (Plan amount / duration × remaining days)" column on rows marked "Refund Done". Social Media entries have no reliable action/used status, so they count toward Total Requests and Coupon Value but not Action Done.
+    <strong>Source (live):</strong> Refund Request Form responses (tab "Form Responses 2"), the CC Team coupon log, the Social Media Team coupon log, the PFT Team coupon log, and the Wiom Net refund log — all read directly from Google Sheets on page load. Filtered to timestamps in 2026. Category labels are normalized for spacing/casing; blank values are grouped as "Not Mentioned"; a category not seen before is grouped as "Other" rather than silently dropped. Refund amount uses the "Refund Amount (Plan amount / duration × remaining days)" column on rows marked "Refund Done". Social Media and PFT coupon entries have no reliable action/used status, so they count toward Total Requests and Coupon Value but not Action Done. Wiom Net refunds are a separate product (wallet recharge refunds) shown on their own, not mixed into the main refund totals — the log has no status field, so every row is counted as a completed refund.
   </footer>
 
   </div>
@@ -908,10 +924,38 @@ function buildLobAmountTable(){
   const rowsEls = el.querySelectorAll('tbody tr:not(.total-row) td.total-cell span:last-child');
   rows.forEach((r,i)=>{ if(rowsEls[i]) rowsEls[i].textContent = fmtINR(r.total); });
 }
+
+function buildWiomNetKPIs(){
+  const s = DATA.wiomNet.summary;
+  const total = sumSlice(s.total);
+  const amt = sumSlice(s.amount);
+  const host = document.getElementById('wiom-net-kpis');
+  host.innerHTML = '';
+  host.appendChild(kpiTile('Total Requests', fmtNum(total), periodLabel()));
+  host.appendChild(kpiTile('Amount Refunded', fmtINRShort(amt), `${fmtINR(amt)} total`));
+}
+function buildWiomNetSummaryTable(){
+  const s = DATA.wiomNet.summary;
+  const el = document.getElementById('table-wiom-net-summary');
+  const months = sliceArr(s.months);
+  const rows = [
+    {label:'Total Requests', values:sliceArr(s.total)},
+    {label:'Amount Refunded (₹)', values:sliceArr(s.amount), money:true},
+  ];
+  let thead = `<thead><tr><th>Metric</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr></thead>`;
+  let tbody = '<tbody>';
+  rows.forEach(r=>{
+    const tot = r.values.reduce((a,b)=>a+b,0);
+    const fmt = r.money ? fmtINR : fmtNum;
+    tbody += `<tr${r.money?' class="total-row"':''}><td>${r.label}</td>${r.values.map(v=>`<td>${fmt(v)}</td>`).join('')}<td>${fmt(tot)}</td></tr>`;
+  });
+  tbody += '</tbody>';
+  el.innerHTML = thead+tbody;
+}
 /* ---------------- render ---------------- */
 function render(){
   const good = css('--good'), critical = css('--critical'), warning = css('--warning'), accent = css('--accent');
-  const slot2 = css('--slot2'), slot3 = css('--slot3'), muted = css('--muted');
+  const slot2 = css('--slot2'), slot3 = css('--slot3'), slot4 = css('--slot4'), muted = css('--muted');
 
   buildRefundKPIs();
   buildStackedBar('chart-refund-status', DATA.refund.statusSummary.months, DATA.refund.statusSummary.done, DATA.refund.statusSummary.rejected, good, critical, 'Refund Done', 'Refund Rejected', 'legend-refund-status');
@@ -933,10 +977,14 @@ function render(){
   buildCouponStatusTable();
   buildLineArea('chart-coupon-value', DATA.coupon.summary.months, DATA.coupon.summary.value, accent, fmtINR, fmtINRShort);
 
-  const lobColors = {'Service':accent, 'Retention':slot2, 'Social Media Team':slot3, 'Not Mentioned':muted};
+  const lobColors = {'Service':accent, 'Retention':slot2, 'Social Media Team':slot3, 'PFT Team':slot4, 'Not Mentioned':muted};
   buildHBars('chart-lob', DATA.coupon.lobBreakdown.map(r=>({label:r.label, value:sumSlice(r.values), color:lobColors[r.label]||muted})), fmtNum);
   buildLobTable();
   buildLobAmountTable();
+
+  buildWiomNetKPIs();
+  buildLineArea('chart-wiom-net-amount', DATA.wiomNet.summary.months, DATA.wiomNet.summary.amount, critical, fmtINR, fmtINRShort);
+  buildWiomNetSummaryTable();
 }
 
 /* ---------------- tabs ---------------- */
@@ -998,6 +1046,8 @@ const MONTH_ABBR = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10
 const SHEET_REFUND = { id: '1jkZzUgWuzmbG7T1fkSAovuheSEGNnjZTWxsdkQjP268', gid: '1692552304' };
 const SHEET_CC_COUPON = { id: '1F70FV-d3yyaeyVyGhzCJqM2O3jJbvYN6TtVagHTJOtQ', gid: '0' };
 const SHEET_SM_COUPON = { id: '1Nub5E6_as7MdduwSYuXXy_Vydw1Qxo95dLZqxP2R1TE', gid: '332382682' };
+const SHEET_PFT_COUPON = { id: '1EuWwxTTC5gTjbYVexoAFJ_U4TSOXi5OEIy2-2524XF4', gid: '1339948158' };
+const SHEET_WIOM_NET = { id: '1jkZzUgWuzmbG7T1fkSAovuheSEGNnjZTWxsdkQjP268', gid: '657320465' };
 function sheetCsvUrl(s){ return `https://docs.google.com/spreadsheets/d/${s.id}/export?format=csv&gid=${s.gid}`; }
 
 function parseFlexDate(raw){
@@ -1007,6 +1057,12 @@ function parseFlexDate(raw){
   let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if(m) return {year:+m[1], month:+m[2]};
   m = s.match(/^(\d{1,2})-([A-Za-z]{3,})-(\d{2,4})/);
+  if(m){
+    const mon = MONTH_ABBR[m[2].toLowerCase().slice(0,3)];
+    let yr = +m[3]; if(yr < 100) yr += 2000;
+    if(mon) return {year:yr, month:mon};
+  }
+  m = s.match(/^(\d{1,2})\/([A-Za-z]{3,})\/(\d{2,4})/);
   if(m){
     const mon = MONTH_ABBR[m[2].toLowerCase().slice(0,3)];
     let yr = +m[3]; if(yr < 100) yr += 2000;
@@ -1093,13 +1149,17 @@ function colIndex(header, name, fallback){
   return idx >= 0 ? idx : fallback;
 }
 
-function computeDashboard(refundCSV, ccCSV, smCSV){
+function computeDashboard(refundCSV, ccCSV, smCSV, pftCouponCSV, wiomNetCSV){
   const refundTable = parseCSV(refundCSV);
   const refundHeader = refundTable.shift() || [];
   const ccTable = parseCSV(ccCSV);
   const ccHeader = ccTable.shift() || [];
   const smTable = parseCSV(smCSV);
   const smHeader = smTable.shift() || [];
+  const pftTable = parseCSV(pftCouponCSV);
+  const pftHeader = pftTable.shift() || [];
+  const wiomTable = parseCSV(wiomNetCSV);
+  const wiomHeader = wiomTable.shift() || [];
 
   // Columns are located by header name (with a positional fallback) rather
   // than hardcoded indices, because this is a live, hand-edited sheet where
@@ -1122,6 +1182,14 @@ function computeDashboard(refundCSV, ccCSV, smCSV){
   const smCol = {
     date: colIndex(smHeader, 'Date', 1),
     value: colIndex(smHeader, 'Coupon value', 5),
+  };
+  const pftCol = {
+    date: colIndex(pftHeader, 'Request date', 0),
+    value: colIndex(pftHeader, 'Coupon provided', 4),
+  };
+  const wiomCol = {
+    timestamp: colIndex(wiomHeader, 'Timestamp', 0),
+    amount: colIndex(wiomHeader, 'Amount to be refunded', 7),
   };
 
   const refundRows = [];
@@ -1154,14 +1222,32 @@ function computeDashboard(refundCSV, ccCSV, smCSV){
     smRows.push({month:dt.month, val});
   }
 
-  if(refundRows.length === 0 && ccRows.length === 0 && smRows.length === 0){
-    throw new Error(`No ${YEAR} rows found in any of the three sheets.`);
+  const pftRows = [];
+  for(const row of pftTable){
+    const dt = parseFlexDate(get(row, pftCol.date));
+    if(!dt || dt.year !== YEAR) continue;
+    let val = parseFloat(get(row, pftCol.value)); if(!isFinite(val)) val = 0;
+    pftRows.push({month:dt.month, val});
+  }
+
+  const wiomRows = [];
+  for(const row of wiomTable){
+    const dt = parseFlexDate(get(row, wiomCol.timestamp));
+    if(!dt || dt.year !== YEAR) continue;
+    let amt = parseFloat(get(row, wiomCol.amount)); if(!isFinite(amt)) amt = 0;
+    wiomRows.push({month:dt.month, amount:amt});
+  }
+
+  if(refundRows.length === 0 && ccRows.length === 0 && smRows.length === 0 && pftRows.length === 0 && wiomRows.length === 0){
+    throw new Error(`No ${YEAR} rows found in any of the five sheets.`);
   }
 
   const monthSet = new Set();
   refundRows.forEach(r=>monthSet.add(r.month));
   ccRows.forEach(r=>monthSet.add(r.month));
   smRows.forEach(r=>monthSet.add(r.month));
+  pftRows.forEach(r=>monthSet.add(r.month));
+  wiomRows.forEach(r=>monthSet.add(r.month));
   const monthNums = Array.from(monthSet).sort((a,b)=>a-b);
   const monthLabels = monthNums.map(m=>MONTH_NAMES[m-1]);
   const idxOf = {}; monthNums.forEach((m,i)=> idxOf[m]=i);
@@ -1227,6 +1313,15 @@ function computeDashboard(refundCSV, ccCSV, smCSV){
     smValueByM[idx] += r.val;
   }
 
+  const pftTotalByM = zeros(), pftValueByM = zerosF();
+  for(const r of pftRows){
+    const idx = idxOf[r.month];
+    pftTotalByM[idx]++;
+    cTotalByM[idx]++;
+    cValueByM[idx] += r.val;
+    pftValueByM[idx] += r.val;
+  }
+
   const lobBreakdown = LOB_CATS.map(c=>{
     const values = (lobCountByCatM[c] || zeros()).slice();
     const valueValues = (lobValueByCatM[c] || zerosF()).map(round2);
@@ -1239,13 +1334,30 @@ function computeDashboard(refundCSV, ccCSV, smCSV){
     valueValues: smValueByM.map(round2),
     valueTotal: round2(smValueByM.reduce((a,b)=>a+b,0)),
   });
+  lobBreakdown.push({
+    label: 'PFT Team',
+    values: pftTotalByM,
+    total: pftTotalByM.reduce((a,b)=>a+b,0),
+    valueValues: pftValueByM.map(round2),
+    valueTotal: round2(pftValueByM.reduce((a,b)=>a+b,0)),
+  });
 
   const couponData = {
     summary: {months:monthLabels, total:cTotalByM, done:cDoneByM, value:cValueByM.map(round2)},
     lobBreakdown,
   };
 
-  return {refund: refundData, coupon: couponData, monthLabels};
+  const wiomTotalByM = zeros(), wiomAmountByM = zerosF();
+  for(const r of wiomRows){
+    const idx = idxOf[r.month];
+    wiomTotalByM[idx]++;
+    wiomAmountByM[idx] += r.amount;
+  }
+  const wiomNetData = {
+    summary: {months:monthLabels, total:wiomTotalByM, amount:wiomAmountByM.map(round2)},
+  };
+
+  return {refund: refundData, coupon: couponData, wiomNet: wiomNetData, monthLabels};
 }
 
 /* ---------------- load pipeline ---------------- */
@@ -1276,11 +1388,12 @@ async function loadLiveData(isRetry){
   dashContent.classList.remove('ready');
 
   try {
-    const [refundCSV, ccCSV, smCSV] = await Promise.all([
-      fetchCSV(SHEET_REFUND), fetchCSV(SHEET_CC_COUPON), fetchCSV(SHEET_SM_COUPON)
+    const [refundCSV, ccCSV, smCSV, pftCouponCSV, wiomNetCSV] = await Promise.all([
+      fetchCSV(SHEET_REFUND), fetchCSV(SHEET_CC_COUPON), fetchCSV(SHEET_SM_COUPON),
+      fetchCSV(SHEET_PFT_COUPON), fetchCSV(SHEET_WIOM_NET)
     ]);
-    const computed = computeDashboard(refundCSV, ccCSV, smCSV);
-    DATA = {refund: computed.refund, coupon: computed.coupon};
+    const computed = computeDashboard(refundCSV, ccCSV, smCSV, pftCouponCSV, wiomNetCSV);
+    DATA = {refund: computed.refund, coupon: computed.coupon, wiomNet: computed.wiomNet};
     ALL_MONTHS = computed.monthLabels;
     filterFrom = 0; filterTo = ALL_MONTHS.length - 1;
     populateFilterOptions();
